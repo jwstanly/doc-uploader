@@ -1,5 +1,5 @@
 # Intro
-A discord bot to upload attached documents in a chat to a Google Drive directory.
+Doc Uploader is a discord bot to upload attached documents in a chat to a Google Drive directory.
 
 To run, simply type in a Discord chat ```!upload``` along with an attached PDF document. The document will be downloaded to the server and then uploaded into the specific Google Drive directory ID. When ran sucsessfully, the Discord chat should look like the following...
 
@@ -10,6 +10,8 @@ To change the Google Drive directory where documents are uploaded, change the ``
 
 ![Google Drive directory ID](https://ploi.io/storage/39/Image-2019-02-14-at-11.16.51-AM.png)
 
+
+# Additional Files
 You will need to modify/create the following files to run this bot...
 
 * **config.json** - This includes your command prefix and your Discord bot token. A template has been created with a ```!``` prefix. Please provide your own Discord bot token
