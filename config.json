@@ -1,4 +1,5 @@
 {
 	"prefix": "!",
-	"token": "YOUR_TOKEN_HERE"
+	"discordToken": "YOUR_DISCORD_BOT_TOKEN_HERE",
+	"googleDriveFolderId": "1gg8qDIRBPw8J13vSMhHin8ahuiITdMJf"
 }

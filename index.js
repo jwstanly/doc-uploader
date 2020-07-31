@@ -1,19 +1,19 @@
+//imports
 //file management
   const fs = require('fs');
   const https = require('https');
 //discord
   const Discord = require('discord.js');
-  const { prefix, token } = require('./config.json');
   const client = new Discord.Client();
 //google drive
   const readline = require('readline');
   const { google } = require('googleapis');
+//config
+  const { prefix, discordToken, googleDriveFolderId } = require('./config.json');
 
 
-//Important Variables
+//Declares global variable for file name
   var fileName = "";
-  var dir = "SampleUploadFolder";
-  var folderId = "1gg8qDIRBPw8J13vSMhHin8ahuiITdMJf";
 
 /*
 GOOGLE DRIVE STUFF
@@ -21,6 +21,9 @@ GOOGLE DRIVE STUFF
   const SCOPES = ['https://www.googleapis.com/auth/drive'];
   const TOKEN_PATH = 'token.json';
 
+  //attempts to authorize the client
+    //credentials = the parsed credentials JSON file
+    //callback = the method you actually want to run (uploadFile)
   function authorize(credentials, callback) {
       const { client_secret, client_id, redirect_uris } = credentials.installed;
       const oAuth2Client = new google.auth.OAuth2(
@@ -31,20 +34,25 @@ GOOGLE DRIVE STUFF
           if (err) return getAccessToken(oAuth2Client, callback);
           oAuth2Client.setCredentials(JSON.parse(token));
           callback(oAuth2Client);//upload file
-
       });
   }
 
+  //generates a token JSON file if one has not already been made
+  //this should only run the first time the discord bot is ran (after that, you should always have a token JSON ready to go)
+    //oAuth2Client = an instance of google.auth.OAuth2
+    //callback = the method you actually want to run (uploadFile)
   function getAccessToken(oAuth2Client, callback) {
       const authUrl = oAuth2Client.generateAuthUrl({
           access_type: 'offline',
           scope: SCOPES,
       });
+      //visit the following Google API URL if requested to do so
       console.log('Authorize this app by visiting this url:', authUrl);
       const rl = readline.createInterface({
           input: process.stdin,
           output: process.stdout,
       });
+      //enter the code given by the URL to authenticate your token
       rl.question('Enter the code from that page here: ', (code) => {
           rl.close();
           oAuth2Client.getToken(code, (err, token) => {
@@ -60,15 +68,17 @@ GOOGLE DRIVE STUFF
       });
   }
 
+  //uploads a file to the specified Google Drive directory
+    //auth = an instance of google.auth.OAuth2
   function uploadFile(auth) {
     const drive = google.drive({ version: 'v3', auth });
     var fileMetadata = {
-      'name': fileName,
-      parents: [folderId]
+      'name': fileName, //the name of the file to be uploaded to Google Drive (which is the same as the file name from Discord because of the global variable fileName)
+      parents: [googleDriveFolderId] //the Google Drive directory. Specified by the folder ID (found in URL on drive.google.com)
     };
     var media = {
-      mimeType: 'application/pdf',
-      body: fs.createReadStream(fileName)
+      mimeType: 'application/pdf', //specifies the uploaded document is a PDF
+      body: fs.createReadStream(fileName) //writes the PDF file stream
     };
     drive.files.create({
       resource: fileMetadata,
@@ -88,34 +98,41 @@ GOOGLE DRIVE STUFF
 DISCORD STUFF
 */
 
+  //runs once at startup
   client.once('ready', () => {
-    console.log(`Bot is ready to go!`);
+    console.log(`Bot is ready to go!`); //Signals the bot is running and operational
   });
 
+  //constantly runs, listening for messages
   client.on('message', message => {
 
-    if(message.content === `${prefix}upload`){
+    if(message.content === `${prefix}upload`){ //listens for !upload keyword
 
-      fileName = message.attachments.first().name;
-      const file = fs.createWriteStream(fileName);
+      if(message.attachments.size < 1){
+        return message.reply('you didn\'t attach a file'); //ensures a file was uploaded
+      }
+      if(message.attachments.size > 1){
+        return message.reply('you can only upload files one at a time'); //ensures only one file was uploaded
+      }
+
+      fileName = message.attachments.first().name; //grabs file name from the attachment in the Discord chat
+      const file = fs.createWriteStream(fileName); //creates subsequent local file
 
       const urlAddress = message.attachments.first().url;
         const request = https.get(urlAddress, response => {
-        response.pipe(file);
+        response.pipe(file); //writes the local file from the Discord file's URL
       });
-
-      message.reply('your file was downloaded! Beginning upload...');
 
       //Uploads to Google Drive
       function uploadToGDrive(){
-        fs.readFile('credentials.json', (err, c) => {
+        fs.readFile('credentials.json', (err, c) => { //reads the Google API credentials JSON
             if (err) return console.log('Error loading client secret file:', err);
-            authorize(JSON.parse(c), uploadFile);
+            authorize(JSON.parse(c), uploadFile); //authorizes instance of Google API along with the request to uploadFile
         });
       }
 
       //times out until file is made
-      setTimeout(uploadToGDrive, 3000);
+      setTimeout(uploadToGDrive, 3000); //waits three seconds so the file is completely downloaded
 
       message.reply('your file was uploaded to Google Drive');
 
@@ -124,4 +141,4 @@ DISCORD STUFF
 
   });
 
-  client.login(token);
+  client.login(discordToken); //creates the Discord bot given the token in the config JSON
