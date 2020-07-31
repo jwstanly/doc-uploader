@@ -118,6 +118,10 @@ DISCORD STUFF
       fileName = message.attachments.first().name; //grabs file name from the attachment in the Discord chat
       const file = fs.createWriteStream(fileName); //creates subsequent local file
 
+      if(fileName.substring(fileName.length-4, fileName.length) !== ".pdf"){
+        return message.reply('you must attach a PDF'); //ensures a file is a PDF
+      }
+
       const urlAddress = message.attachments.first().url;
         const request = https.get(urlAddress, response => {
         response.pipe(file); //writes the local file from the Discord file's URL
