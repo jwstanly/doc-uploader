@@ -14,6 +14,10 @@ You will need to modify/create the following files to run this bot...
 * **credentials.json** - This includes your Google Drive API credentials. You can receive your own credentials JSON by clicking on [this](https://developers.google.com/drive/api/v3/quickstart/nodejs) link to enable the Drive API on your Google account.
 * **token.json** - This JSON generates once you have authenticated an instance of Google's API with the proper scope. You don't need to download this; the link above will subsequently generate this for you. Additionally, please note that the token JSON should be deleted if you ever alter your Google API scopes (it will once again automatically recreate the JSON for you).
 
+Your working directory should look like this once complete...
+
+![finished working directory](https://i.imgur.com/5LNcT71.png)
+
 # Further Configuration
 To change the Google Drive directory where documents are uploaded, change the ```folderId``` variable (index.js - line 15) to the directory's ID. The ID can be found in the URL for the resepctive directory like so...
 
